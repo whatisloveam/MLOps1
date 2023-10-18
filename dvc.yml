@@ -1,0 +1,53 @@
+stages:
+   get_data:
+     cmd: python scripts/data_scripts/get_data.py
+     deps:
+     - scripts/data_scripts/tokenize_text.py
+     outs:
+     - data/raw
+   tokenize_text:
+     cmd: python scripts/data_scripts/tokenize_text.py data/raw/train_raw.csv
+     deps:
+     - data/raw/train_raw.csv
+     - scripts/data_scripts/tokenize_text.py
+     outs:
+     - data/stage1
+   remove_stopwords:
+     cmd: python scripts/data_scripts/remove_stopwords.py data/stage1/train.pkl
+     deps:
+     - data/stage1/train.pkl
+     - scripts/data_scripts/remove_stopwords.py
+     outs:
+     - data/stage2
+   split:
+     cmd: python scripts/data_scripts/train_test_split.py data/stage2/train.pkl
+     deps:
+     - data/stage2/train.pkl
+     - scripts/data_scripts/train_test_split.py
+     params:
+     - split.split_ratio
+     outs:
+     - data/stage3
+     - tokenizer/tokenizer.pkl
+   train:
+     cmd: python scripts/model_scripts/train.py data/stage3/train.csv models/svm.pkl tokenizer/tokenizer.pkl
+     deps:
+     - data/stage3/train.csv
+     - scripts/model_scripts/train.py
+     - tokenizer/tokenizer.pkl
+     params:
+     - train.C
+     - train.gamma
+     - train.kernel
+     outs:
+     - models/svm.pkl
+   evaluate:
+     cmd: python scripts/model_scripts/evaluate.py data/stage3/test.csv models/svm.pkl tokenizer/tokenizer.pkl
+     deps:
+     - data/stage3/test.csv
+     - models/svm.pkl
+     - tokenizer/tokenizer.pkl
+     - scripts/model_scripts/evaluate.py
+     metrics:
+     - evaluate/score.json:
+         cache: false 

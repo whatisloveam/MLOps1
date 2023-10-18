@@ -1,0 +1,124 @@
+schema: '2.0'
+ stages:
+   tokenize_text:
+     cmd: python scripts/data_scripts/tokenize_text.py data/raw/train_raw.csv
+     deps:
+     - path: data/raw/train_raw.csv
+       hash: md5
+       md5: ed3c799825db5682203677748a4acba5
+       size: 46337604
+     - path: scripts/data_scripts/tokenize_text.py
+       hash: md5
+       md5: 54fe7869adb4d36f4872a5d247c42503
+       size: 1249
+     outs:
+     - path: data/stage1
+       hash: md5
+       md5: 1237e931a4b4b14ba7c4ad738e726e85.dir
+       size: 98672597
+       nfiles: 1
+   remove_stopwords:
+     cmd: python scripts/data_scripts/remove_stopwords.py data/stage1/train.pkl
+     deps:
+     - path: data/stage1/train.pkl
+       hash: md5
+       md5: 774897c44fd9b3a4a4520ab891054b40
+       size: 98672597
+     - path: scripts/data_scripts/remove_stopwords.py
+       hash: md5
+       md5: d2fc924b3b92587f31e8437abdd2c2b8
+       size: 827
+     outs:
+     - path: data/stage2
+       hash: md5
+       md5: 6b71bd99f6e551d77d5c2dc11225ff34.dir
+       size: 135360845
+       nfiles: 1
+   split:
+     cmd: python scripts/data_scripts/train_test_split.py data/stage2/train.pkl
+     deps:
+     - path: data/stage2/train.pkl
+       hash: md5
+       md5: 7acb977b2ce100f119fa5be6a3633304
+       size: 135360845
+     - path: scripts/data_scripts/train_test_split.py
+       hash: md5
+       md5: e3e9b54fb326e5850dd142d7a83347f0
+       size: 1253
+     params:
+       params.yaml:
+         split.split_ratio: 0.3
+     outs:
+     - path: data/stage3
+       hash: md5
+       md5: 3f3053cab56df5232ab1531561b59a3f.dir
+       size: 36763388
+       nfiles: 2
+     - path: tokenizer/tokenizer.pkl
+       hash: md5
+       md5: e362a898d70416e4bf19d831c66b5bb4
+       size: 156950862
+   train:
+     cmd: python scripts/model_scripts/train.py data/stage3/train.csv models/svm.pkl
+       tokenizer/tokenizer.pkl
+     deps:
+     - path: data/stage3/train.csv
+       hash: md5
+       md5: cf1e3baab900e053bb0f1942515874bc
+       size: 25711339
+     - path: scripts/model_scripts/train.py
+       hash: md5
+       md5: 29edcce12b652f2804c1978f26ce650b
+       size: 912
+     - path: tokenizer/tokenizer.pkl
+       hash: md5
+       md5: e362a898d70416e4bf19d831c66b5bb4
+       size: 156950862
+     params:
+       params.yaml:
+         train.C: 2
+         train.gamma: 0.4
+         train.kernel: linear
+     outs:
+     - path: models/svm.pkl
+       hash: md5
+       md5: be789e1d1bf90b5224d89197116d18ed
+       size: 11581575
+   evaluate:
+     cmd: python scripts/model_scripts/evaluate.py data/stage3/test.csv models/svm.pkl
+       tokenizer/tokenizer.pkl
+     deps:
+     - path: data/stage3/test.csv
+       hash: md5
+       md5: d18074b38c02cff471dc94307093021e
+       size: 11052049
+     - path: models/svm.pkl
+       hash: md5
+       md5: be789e1d1bf90b5224d89197116d18ed
+       size: 11581575
+     - path: scripts/model_scripts/evaluate.py
+       hash: md5
+       md5: 26d10aa4d825652386fd961cdda0ad8c
+       size: 746
+     - path: tokenizer/tokenizer.pkl
+       hash: md5
+       md5: e362a898d70416e4bf19d831c66b5bb4
+       size: 156950862
+     outs:
+     - path: evaluate/score.json
+       hash: md5
+       md5: f44f8c8a3862edd3388ed8b37651c90b
+       size: 29
+   get_data:
+     cmd: python scripts/data_scripts/get_data.py
+     deps:
+     - path: scripts/data_scripts/tokenize_text.py
+       hash: md5
+       md5: 54fe7869adb4d36f4872a5d247c42503
+       size: 1249
+     outs:
+     - path: data/raw
+       hash: md5
+       md5: c5717b4b83322806e8641f36d0e15974.dir
+       size: 46337604
+       nfiles: 1
