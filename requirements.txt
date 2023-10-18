@@ -1,4 +1,6 @@
-scikit-learn
-gdown
-nltk
-pandas
+scikit-learn==1.3.1
+gdown==4.7.1
+nltk==3.8.1
+pandas==2.1.1
+dvc==3.24.0
+dvc_ssh==2.22.2
